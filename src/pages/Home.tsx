@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonAvatar, IonItemSliding, IonItemOptions, IonItemOption } from '@ionic/react';
 import { fetchUsers } from "../services/UserService";
 
 const HomePage: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
+  const itemSlidingRefs = useRef(new Map());
 
   useEffect(() => {
     const getUsers = async () => {
@@ -14,7 +15,8 @@ const HomePage: React.FC = () => {
     getUsers();
   }, []);
 
-  const removeUser = (email: string) => {
+  const removeUser = (email: string, index: number) => {
+    itemSlidingRefs.current.get(index)?.close();
     setUsers(users.filter(user => user.email !== email));
   };
 
@@ -28,7 +30,7 @@ const HomePage: React.FC = () => {
       <IonContent fullscreen>
         <IonList>
           {users.map((user, index) => (
-            <IonItemSliding key={index}>
+            <IonItemSliding key={index} ref={el => itemSlidingRefs.current.set(index, el)}>
               <IonItem>
                 <IonAvatar slot="start">
                   <img src={user.picture.thumbnail} alt="User"/>
@@ -38,7 +40,7 @@ const HomePage: React.FC = () => {
                 </IonLabel>
               </IonItem>
               <IonItemOptions side="end">
-                <IonItemOption color="danger" onClick={() => removeUser(user.email)}>
+                <IonItemOption color="danger" onClick={() => removeUser(user.email, index)}>
                   Delete
                 </IonItemOption>
               </IonItemOptions>
